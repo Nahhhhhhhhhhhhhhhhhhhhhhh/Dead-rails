@@ -6,6 +6,7 @@ local modules = {
     API = "https://sdkapi-public.luarmor.net/library.lua"
 }
 
+-- Load all modules
 local loadedModules = 0
 for key, url in next, modules do
     task.spawn(function()
@@ -17,7 +18,7 @@ end
 
 repeat task.wait() until loadedModules == 4
 
--- Game support check
+-- Check game support and kick if unsupported or in lobby
 local placeId = game.PlaceId
 local supported = {
     [16732694052] = "9def910837a9eb687d5d76eabec435a5",
@@ -29,27 +30,21 @@ local supported = {
 if supported[placeId] then
     modules.API.script_id = supported[placeId]
 elseif placeId == 116495829188952 then
-    return modules.Library:Notify({
-        Title = "Notice",
-        Description = "Please execute Rift when you are in an ACTUAL game, not the lobby.",
-        Time = 5
-    })
+    game:GetService("Players").LocalPlayer:Kick("Please execute Rift in an actual game, not the lobby.")
+    return
 else
-    return modules.Library:Notify({
-        Title = "Unsupported Game",
-        Description = "Rift does not support this game.\n\nIf you feel that this is a mistake, please contact us on vaultcord.win/synergy.",
-        Time = 5
-    })
+    game:GetService("Players").LocalPlayer:Kick("Unsupported game. Visit vaultcord.win/synergy if this is a mistake.")
+    return
 end
 
--- Library Setup
+-- Set up the UI
 modules.Library:SetAssetsFolder("RiftAssets")
 modules.Library:SetAssetsUrl("https://raw.githubusercontent.com/Synergy-Networks/products/refs/heads/main/Rift/Assets")
 modules.Library:SetModulesUrl("https://raw.githubusercontent.com/synnyyy/Obsidian/refs/heads/main/addons")
 modules.Library:CheckAssetsFolder()
 modules.Library:LoadModules()
 
--- Remove key system and directly load script
+-- Load main UI immediately
 if getgenv().Library then
     getgenv().Library:Unload()
     getgenv().Library = nil
