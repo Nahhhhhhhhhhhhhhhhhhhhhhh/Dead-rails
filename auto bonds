@@ -1,0 +1,58 @@
+local base = "https://raw.githubusercontent.com/synnyyy/Obsidian/refs/heads/main"
+local modules = {
+    Library = base .. "/Library.lua",
+    ThemeManager = base .. "/addons/ThemeManager.lua",
+    Information = "https://raw.githubusercontent.com/Synergy-Networks/products/refs/heads/main/Rift/Assets/Information.lua",
+    API = "https://sdkapi-public.luarmor.net/library.lua"
+}
+
+local loadedModules = 0
+for key, url in next, modules do
+    task.spawn(function()
+        local content = game:HttpGet(url)
+        modules[key] = loadstring(content)()
+        loadedModules += 1
+    end)
+end
+
+repeat task.wait() until loadedModules == 4
+
+-- Game support check
+local placeId = game.PlaceId
+local supported = {
+    [16732694052] = "9def910837a9eb687d5d76eabec435a5",
+    [72907489978215] = "1c57708a6733fcdac89be981d028aebc",
+    [18687417158] = "296d23036fbb1af463d3ad03f08a67a4",
+    [70876832253163] = "373f5d42922fa6b5ac57adbb41b8015f"
+}
+
+if supported[placeId] then
+    modules.API.script_id = supported[placeId]
+elseif placeId == 116495829188952 then
+    return modules.Library:Notify({
+        Title = "Notice",
+        Description = "Please execute Rift when you are in an ACTUAL game, not the lobby.",
+        Time = 5
+    })
+else
+    return modules.Library:Notify({
+        Title = "Unsupported Game",
+        Description = "Rift does not support this game.\n\nIf you feel that this is a mistake, please contact us on vaultcord.win/synergy.",
+        Time = 5
+    })
+end
+
+-- Library Setup
+modules.Library:SetAssetsFolder("RiftAssets")
+modules.Library:SetAssetsUrl("https://raw.githubusercontent.com/Synergy-Networks/products/refs/heads/main/Rift/Assets")
+modules.Library:SetModulesUrl("https://raw.githubusercontent.com/synnyyy/Obsidian/refs/heads/main/addons")
+modules.Library:CheckAssetsFolder()
+modules.Library:LoadModules()
+
+-- Remove key system and directly load script
+if getgenv().Library then
+    getgenv().Library:Unload()
+    getgenv().Library = nil
+end
+
+modules.API.load_script()
